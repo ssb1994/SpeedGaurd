@@ -10,3 +10,6 @@
 **Assumptions**
 1. The speed limit of each user is received via get api call.
 2. The speed is calculated using locations api in the app.
+3. Api calls are simulated and randomly returns rental info.
+4. Speed monitoring system is mocked using fused location api.
+5. Firebase and AWS notifications are stubbed.

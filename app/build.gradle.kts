@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("jacoco")
 }
 
 android {
@@ -10,6 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.speedguard"
+        testApplicationId = "com.example.speedguard.tests"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -37,6 +39,12 @@ android {
     buildFeatures {
         compose = true
     }
+
+    sourceSets {
+        getByName("main").java.srcDirs("src/main/java")
+        getByName("test").java.srcDirs("src/test/java")
+    }
+
 }
 
 dependencies {
@@ -51,8 +59,18 @@ dependencies {
     implementation(libs.androidx.material3)
 
     implementation(libs.google.android.gms.play.services.location)
+    implementation(libs.androidx.lifecycle.service)
 
     testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.turbine)
+    testImplementation(libs.mockk)
+    testImplementation(libs.androidx.core)
+
+
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

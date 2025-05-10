@@ -1,19 +1,16 @@
-package com.example.speedguard
+package com.example.speedguard.presentation
 
 import android.app.AlertDialog
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Scaffold
-import androidx.compose.ui.Modifier
 import com.example.speedguard.ui.theme.SpeedGuardTheme
+import com.example.speedguard.util.Logger.logd
 import com.example.speedguard.util.permissions.LocationPermissionManager
-import com.example.speedguard.util.location.locationTracking
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 
 class MainActivity : ComponentActivity() {
     companion object {
@@ -28,25 +25,28 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SpeedGuardTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
 
-                }
             }
         }
+
+
 
         locationPermissionManager = LocationPermissionManager(this)
 
         if (locationPermissionManager.hasForegroundLocationPermissions()) {
             if (locationPermissionManager.hasBackgroundLocationPermissions()) {
-
-                locationTracking(CoroutineScope(Dispatchers.IO))
+                logd("Have permission")
+                startLocationService()
             } else {
-                locationPermissionManager.requestBackgroundPermission(LOCATION_BACKGROUND_REQUEST_CODE)
+                locationPermissionManager.requestBackgroundPermission(
+                    LOCATION_BACKGROUND_REQUEST_CODE
+                )
             }
         } else {
             locationPermissionManager.requestForegroundPermissions(LOCATION_FOREGROUND_REQUEST_CODE)
         }
 
+        logd("MainActivity onCreate()")
     }
 
     override fun onRequestPermissionsResult(
@@ -62,13 +62,14 @@ class MainActivity : ComponentActivity() {
                 if (grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
                     // Foreground permissions granted, now request background if needed
                     if (locationPermissionManager.hasBackgroundLocationPermissions()) {
-                        locationTracking(CoroutineScope(Dispatchers.IO))
-                    }else{
+                        startLocationService()
+                    } else {
                         locationPermissionManager.requestBackgroundPermission(
-                            LOCATION_BACKGROUND_REQUEST_CODE)
+                            LOCATION_BACKGROUND_REQUEST_CODE
+                        )
                     }
                 } else if (locationPermissionManager.shouldShowRationale()) {
-
+                    locationPermissionManager.openAppSettings()
                 } else {
                     showPermissionDeniedDialog()
                 }
@@ -77,11 +78,21 @@ class MainActivity : ComponentActivity() {
             LOCATION_BACKGROUND_REQUEST_CODE -> {
                 if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
                     //startLocationMonitoring()
-                    locationTracking(CoroutineScope(Dispatchers.IO))
+                    startLocationService()
                 } else {
                     showPermissionDeniedDialog()
                 }
             }
+        }
+    }
+
+    private fun startLocationService() {
+        logd("startLocationService")
+        val intent = Intent(this, SpeedTrackingService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent)
+        } else {
+            startService(intent)
         }
     }
 

@@ -7,6 +7,7 @@ import android.location.LocationManager
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.getSystemService
+import com.example.speedguard.util.Logger.logd
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -60,6 +61,7 @@ class SpeedObserver(private val context: Context) {
 
                 val location = result.lastLocation ?: return
                 val speedKmh = location.speed * 3.6 // m/s to km/h
+                logd("Speed in kmph = $speedKmh")
                 trySend(speedKmh)
             }
         }
